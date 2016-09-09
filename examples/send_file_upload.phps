@@ -1,49 +1,94 @@
-<?php
-/**
- * PHPMailer simple file upload and send example
- */
-$msg = '';
-if (array_key_exists('userfile', $_FILES)) {
-    // First handle the upload
-    // Don't trust provided filename - same goes for MIME types
-    // See http://php.net/manual/en/features.file-upload.php#114004 for more thorough upload validation
-    $uploadfile = tempnam(sys_get_temp_dir(), sha1($_FILES['userfile']['name']));
-    if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-        // Upload handled successfully
-        // Now create a message
-        // This should be somewhere in your include_path
-        require '../PHPMailerAutoload.php';
-        $mail = new PHPMailer;
-        $mail->setFrom('from@example.com', 'First Last');
-        $mail->addAddress('whoto@example.com', 'John Doe');
-        $mail->Subject = 'PHPMailer file sender';
-        $mail->msgHTML("My message body");
-        // Attach the uploaded file
-        $mail->addAttachment($uploadfile, 'My uploaded file');
-        if (!$mail->send()) {
-            $msg .= "Mailer Error: " . $mail->ErrorInfo;
-        } else {
-            $msg .= "Message sent!";
-        }
-    } else {
-        $msg .= 'Failed to move file to ' . $uploadfile;
-    }
+<?php 
+header('Content-type: application/json');
+require '../PHPMailer/PHPMailerAutoload.php';
+//require 'PHPMailer/class.phpmailer.php';
+$emaildestino                = utf8_decode($_GET["emaildestino"]);
+$nombre  			  		 = utf8_decode($_GET["nombre"]);
+$fechaNacimiento  			 = utf8_decode($_GET["fechaNacimiento"]);
+$nacionalidad  			     = utf8_decode($_GET["nacionalidad"]);
+$estadocivil  			     = utf8_decode($_GET["estadocivil"]);
+$direccion  			     = utf8_decode($_GET["direccion"]);
+$universidad  			     = utf8_decode($_GET["universidad"]);
+$titulo  			         = utf8_decode($_GET["titulo"]);
+$universidad2  			     = utf8_decode($_GET["universidad2"]);
+$titulo2  			         = utf8_decode($_GET["titulo2"]);
+$nivelAcademico  			 = utf8_decode($_GET["nivelAcademico"]);
+
+
+$cuerpoMensaje ;
+$datosPersonales='Datos No Registrados.';
+$datosSenescyt='Datos No Registrados.';
+$datosPropIntelectual='Datos No Registrados.';
+
+$url="http://servicios.misnutricionistas.com.ec/curriculum/CV_WAVG.pdf";
+$mail = new PHPMailer;
+
+$mail->Host = 'smtp.gmail.com';
+$mail->Mailer   = 'smtp';
+$mail->Port = 465;
+$mail->SMTPAuth = true;   
+$mail->SMTPDebug = 0;                        
+$mail->Username = '*******ec@gmail.com';           
+$mail->Password = 'pr*****2016'; 
+
+$mail->SMTPSecure = 'ssl';   
+
+$mail->From = 'curriculumseguroec@gmail.com';
+$mail->FromName = 'Curriculum Seguro';
+$mail->addAddress($emaildestino, 'Nombre del Usuario'); 
+           
+
+//$mail->addReplyTo('info@example.com', 'Information');
+//$mail->addCC('cc@example.com');
+//$mail->addBCC('bcc@example.com');
+
+$mail->WordWrap = 50;                                 // Set word wrap to 50 characters
+//$mail->addStringAttachment(file_get_contents($url), 'CV_WAVG.pdf');        // Add attachments
+
+//$mail->addAttachment('/tmp/image.jpg', 'new.jpg');    // Optional name
+$mail->isHTML(true);                                  // Set email format to HTML
+
+
+$array = json_encode($arraydatosperso);
+$mail->Subject = 'Curriculum Seguro';
+ $cuerpoMensaje = ('<div id=":ng"class="a3s aXjCH m14d8cf4800f79ca3">
+                    <h2>CURRICULUM SEGURO</h2>
+<p>
+<h3><b>DATOS PERSONALES:</b></h3>
+<p>
+<i><b>C.I:</b></i><font color="blue"><b>73239687</b></font></br>
+  <i><b>NOMBRE Y APELLIDO: </b></i><font color="blue"><b>.'$nombre'.</b></font></br>
+<b>FECHA DE NACIMIENTO:</b><font color="blue"><b>26/09/1992</b></font></br>
+<b>NACIONALIDAD:</b><font color="blue"><b>19 años</b></font></br>
+
+<b>ESTADO CIVIL:</b><font color="blue"><b>CASADO</b></font></br>
+<b>DIRECCION:</b><font color="blue"><b>jr:Las Juncias 722 ,Las Flores. S.J.L</b></font></br>
+
+
+<p>
+<h3><i><b><u>TITULOS OBTENIDOS:</u></b></i></h3>
+<p>
+<i><b>UNIVERSIDAD:</b></i><font color="blue"> <b>C.E."Albert Einstein 1181"(1997-2008)</b></font></br>
+<i><b>NOMBRE TITULO:</b></i><font color="blue"><b>Universidad Telesup "Ingenieria de Sistemas"(2012-actualidad)</b></font></br>  
+<i><b>NIVEL ACADEMICO:</b></i><font color="blue"> <b>C.E."Albert Einstein 1181"(1997-2008)</b></font></br>
+<p>
+
+</div>');
+           
+$mail->Body    = $cuerpoMensaje;
+
+
+//$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+if(!$mail->send()) {
+	$mensaje  = "0";
+	
+    
+} else {
+    $mensaje  = "1" ;
+	
 }
+
+echo json_encode($mensaje);
+
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>PHPMailer Upload</title>
-</head>
-<body>
-<?php if (empty($msg)) { ?>
-    <form method="post" enctype="multipart/form-data">
-        <input type="hidden" name="MAX_FILE_SIZE" value="100000"> Send this file: <input name="userfile" type="file">
-        <input type="submit" value="Send File">
-    </form>
-<?php } else {
-    echo $msg;
-} ?>
-</body>
-</html>
